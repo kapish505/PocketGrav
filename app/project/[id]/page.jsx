@@ -22,6 +22,8 @@ import DocViewer from "@/components/DocViewer"
 export const dynamic = "force-dynamic"
 
 export default async function ProjectPage({ params }) {
+  const { id } = await params
+  
   const session = await getServerSession(authOptions)
   if (!session) redirect("/login")
 
@@ -31,7 +33,7 @@ export default async function ProjectPage({ params }) {
   const { data: projectSession } = await supabase
     .from("sessions")
     .select("*")
-    .eq("id", params.id)
+    .eq("id", id)
     .eq("user_email", session.user.email)  // security: own data only
     .single()
 
@@ -42,20 +44,20 @@ export default async function ProjectPage({ params }) {
   const { data: tasks } = await supabase
     .from("tasks")
     .select("*")
-    .eq("session_id", params.id)
+    .eq("session_id", id)
     .order("task_index", { ascending: true })
 
   // Fetch documents (plan, walkthrough)
   const { data: documents } = await supabase
     .from("documents")
     .select("*")
-    .eq("session_id", params.id)
+    .eq("session_id", id)
 
   // Fetch last 60 log lines
   const { data: logs } = await supabase
     .from("logs")
     .select("*")
-    .eq("session_id", params.id)
+    .eq("session_id", id)
     .order("created_at", { ascending: false })
     .limit(60)
 
