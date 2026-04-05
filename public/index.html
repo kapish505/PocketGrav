@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="theme-color" content="#0a0a0f" />
+    <meta name="description" content="PocketGrav — Monitor your AntiGravity projects from your phone" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <title>PocketGrav</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <!-- ── Animated background ── -->
+    <div class="bg-grid"></div>
+    <div class="bg-glow"></div>
+
+    <!-- ── Notification Toast ── -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- ── Header ── -->
+    <header class="app-header">
+      <div class="header-left">
+        <div class="logo-mark">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+            <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="#7c3aed" stroke-width="2" stroke-linejoin="round"/>
+            <path d="M2 17l10 5 10-5" stroke="#7c3aed" stroke-width="2" stroke-linejoin="round"/>
+            <path d="M2 12l10 5 10-5" stroke="#a78bfa" stroke-width="1.5" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div>
+          <h1 class="app-title">PocketGrav</h1>
+          <p class="app-subtitle">AntiGravity Monitor</p>
+        </div>
+      </div>
+      <div class="header-right">
+        <div id="connection-dot" class="status-dot offline" title="Connection status"></div>
+        <span id="connection-label" class="connection-label">Connecting...</span>
+      </div>
+    </header>
+
+    <!-- ══════════════════════════════════════════════════════════════
+         PAGE: DASHBOARD
+    ════════════════════════════════════════════════════════════════ -->
+    <main id="page-dashboard" class="page active">
+
+      <!-- Project Status Card -->
+      <section class="card glass" id="project-card">
+        <div class="card-header">
+          <span class="card-icon">⚡</span>
+          <h2 class="card-title">Live Project Status</h2>
+          <div id="status-badge" class="badge badge-running">Running</div>
+        </div>
+
+        <div class="project-name-row">
+          <span id="project-name" class="project-name">AntiGravity Core Build</span>
+        </div>
+
+        <!-- Progress Ring -->
+        <div class="progress-ring-wrapper">
+          <svg class="progress-ring" viewBox="0 0 120 120">
+            <circle class="ring-bg" cx="60" cy="60" r="54" />
+            <circle id="ring-progress" class="ring-fill" cx="60" cy="60" r="54"
+              stroke-dasharray="339.29"
+              stroke-dashoffset="339.29"
+            />
+          </svg>
+          <div class="ring-center">
+            <span id="progress-percent" class="ring-number">0%</span>
+            <span class="ring-label">Progress</span>
+          </div>
+        </div>
+
+        <!-- Task row -->
+        <div class="task-row">
+          <span class="task-label">Current Task</span>
+          <span id="current-task" class="task-value">Initializing...</span>
+        </div>
+
+        <!-- Stats row -->
+        <div class="stat-row">
+          <div class="stat-item">
+            <span class="stat-icon">⏱</span>
+            <div>
+              <span class="stat-label">Elapsed</span>
+              <span id="elapsed-time" class="stat-value">0s</span>
+            </div>
+          </div>
+          <div class="stat-divider"></div>
+          <div class="stat-item">
+            <span class="stat-icon">📡</span>
+            <div>
+              <span class="stat-label">Status</span>
+              <span id="status-text" class="stat-value">Running</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Quick System Snapshot -->
+      <section class="card glass" id="quick-system">
+        <div class="card-header">
+          <span class="card-icon">🖥</span>
+          <h2 class="card-title">System Snapshot</h2>
+        </div>
+        <div class="snapshot-grid">
+          <div class="snapshot-item">
+            <div class="snapshot-label">CPU</div>
+            <div id="dash-cpu" class="snapshot-value">–%</div>
+            <div class="mini-bar"><div id="dash-cpu-bar" class="mini-bar-fill cpu-bar"></div></div>
+          </div>
+          <div class="snapshot-item">
+            <div class="snapshot-label">Memory</div>
+            <div id="dash-mem" class="snapshot-value">–%</div>
+            <div class="mini-bar"><div id="dash-mem-bar" class="mini-bar-fill mem-bar"></div></div>
+          </div>
+          <div class="snapshot-item">
+            <div class="snapshot-label">Uptime</div>
+            <div id="dash-uptime" class="snapshot-value">–</div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- ══════════════════════════════════════════════════════════════
+         PAGE: LOGS
+    ════════════════════════════════════════════════════════════════ -->
+    <main id="page-logs" class="page">
+      <section class="card glass logs-card">
+        <div class="card-header">
+          <span class="card-icon">📋</span>
+          <h2 class="card-title">Live Logs</h2>
+          <div class="live-pill">LIVE</div>
+        </div>
+        <!-- Terminal window -->
+        <div id="log-terminal" class="terminal">
+          <div id="log-entries" class="log-entries">
+            <!-- Logs rendered here -->
+          </div>
+        </div>
+        <button id="btn-scroll-bottom" class="scroll-btn" onclick="scrollToBottom()">
+          ↓ Scroll to bottom
+        </button>
+      </section>
+    </main>
+
+    <!-- ══════════════════════════════════════════════════════════════
+         PAGE: SYSTEM
+    ════════════════════════════════════════════════════════════════ -->
+    <main id="page-system" class="page">
+
+      <!-- CPU Card -->
+      <section class="card glass">
+        <div class="card-header">
+          <span class="card-icon">⚙️</span>
+          <h2 class="card-title">CPU Usage</h2>
+          <span id="sys-cpu-val" class="metric-value">0%</span>
+        </div>
+        <div class="progress-bar-container">
+          <div id="sys-cpu-bar" class="progress-bar-fill cpu-gradient" style="width:0%"></div>
+        </div>
+        <p class="metric-hint">Real-time load from your MacBook</p>
+      </section>
+
+      <!-- Memory Card -->
+      <section class="card glass">
+        <div class="card-header">
+          <span class="card-icon">🧠</span>
+          <h2 class="card-title">Memory</h2>
+          <span id="sys-mem-val" class="metric-value">0%</span>
+        </div>
+        <div class="progress-bar-container">
+          <div id="sys-mem-bar" class="progress-bar-fill mem-gradient" style="width:0%"></div>
+        </div>
+        <div class="mem-detail">
+          <span id="sys-mem-used">–</span> GB used / <span id="sys-mem-total">–</span> GB total
+        </div>
+      </section>
+
+      <!-- Uptime Card -->
+      <section class="card glass">
+        <div class="card-header">
+          <span class="card-icon">🕰</span>
+          <h2 class="card-title">Server Uptime</h2>
+        </div>
+        <div id="sys-uptime-display" class="uptime-display">00:00:00</div>
+        <p class="metric-hint">Time since server started</p>
+      </section>
+
+      <!-- Activity Sparkline Card -->
+      <section class="card glass">
+        <div class="card-header">
+          <span class="card-icon">📈</span>
+          <h2 class="card-title">CPU History (60s)</h2>
+        </div>
+        <canvas id="cpu-chart" class="spark-canvas" width="340" height="80"></canvas>
+      </section>
+
+    </main>
+
+    <!-- ══════════════════════════════════════════════════════════════
+         PAGE: CONTROLS
+    ════════════════════════════════════════════════════════════════ -->
+    <main id="page-controls" class="page">
+
+      <section class="card glass">
+        <div class="card-header">
+          <span class="card-icon">🎮</span>
+          <h2 class="card-title">Project Controls</h2>
+        </div>
+        <p class="control-desc">Send commands to your laptop. Actions execute immediately.</p>
+
+        <div class="control-grid">
+          <!-- Restart -->
+          <button id="btn-restart" class="control-btn btn-restart" onclick="sendControl('restart')">
+            <span class="ctrl-icon">🔄</span>
+            <span class="ctrl-label">Restart</span>
+            <span class="ctrl-desc">Restart the project build</span>
+          </button>
+
+          <!-- Stop -->
+          <button id="btn-stop" class="control-btn btn-stop" onclick="sendControl('stop')">
+            <span class="ctrl-icon">⛔</span>
+            <span class="ctrl-label">Stop</span>
+            <span class="ctrl-desc">Halt the current process</span>
+          </button>
+
+          <!-- Deploy -->
+          <button id="btn-deploy" class="control-btn btn-deploy" onclick="sendControl('deploy')">
+            <span class="ctrl-icon">🚀</span>
+            <span class="ctrl-label">Deploy</span>
+            <span class="ctrl-desc">Push to production</span>
+          </button>
+
+          <!-- Clear Logs -->
+          <button id="btn-clear" class="control-btn btn-clear" onclick="sendControl('clearLogs')">
+            <span class="ctrl-icon">🧹</span>
+            <span class="ctrl-label">Clear Logs</span>
+            <span class="ctrl-desc">Wipe the log buffer</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- Command History -->
+      <section class="card glass">
+        <div class="card-header">
+          <span class="card-icon">📜</span>
+          <h2 class="card-title">Command History</h2>
+        </div>
+        <div id="cmd-history" class="cmd-history">
+          <p class="empty-state">No commands sent yet.</p>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- ══════════════════════════════════════════════════════════════
+         PAGE: SETTINGS
+    ════════════════════════════════════════════════════════════════ -->
+    <main id="page-settings" class="page">
+
+      <section class="card glass">
+        <div class="card-header">
+          <span class="card-icon">⚙️</span>
+          <h2 class="card-title">Settings</h2>
+        </div>
+
+        <div class="settings-group">
+          <label class="setting-label">Server Address</label>
+          <div class="setting-row">
+            <input id="setting-host" type="text" class="setting-input" placeholder="e.g. 192.168.1.10:3000" />
+            <button class="setting-btn" onclick="applyHost()">Apply</button>
+          </div>
+          <p class="setting-hint">Connect to a different laptop on your network</p>
+        </div>
+
+        <div class="settings-group">
+          <label class="setting-label">Notifications</label>
+          <div class="toggle-row">
+            <span class="toggle-label">Build complete alerts</span>
+            <label class="toggle-switch">
+              <input type="checkbox" id="notif-build" checked />
+              <span class="toggle-knob"></span>
+            </label>
+          </div>
+          <div class="toggle-row">
+            <span class="toggle-label">Error alerts</span>
+            <label class="toggle-switch">
+              <input type="checkbox" id="notif-error" checked />
+              <span class="toggle-knob"></span>
+            </label>
+          </div>
+        </div>
+
+        <div class="settings-group">
+          <label class="setting-label">Auto-scroll Logs</label>
+          <div class="toggle-row">
+            <span class="toggle-label">Always scroll to latest</span>
+            <label class="toggle-switch">
+              <input type="checkbox" id="setting-autoscroll" checked />
+              <span class="toggle-knob"></span>
+            </label>
+          </div>
+        </div>
+      </section>
+
+      <!-- About -->
+      <section class="card glass about-card">
+        <div class="about-logo">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none">
+            <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="#7c3aed" stroke-width="2" stroke-linejoin="round"/>
+            <path d="M2 17l10 5 10-5" stroke="#7c3aed" stroke-width="2" stroke-linejoin="round"/>
+            <path d="M2 12l10 5 10-5" stroke="#a78bfa" stroke-width="1.5" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <h3 class="about-name">PocketGrav</h3>
+        <p class="about-desc">Monitor your AntiGravity projects<br/>from anywhere on your phone.</p>
+        <div class="about-badges">
+          <span class="about-badge">v1.0.0</span>
+          <span class="about-badge">Socket.io</span>
+          <span class="about-badge">Node.js</span>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- ── Bottom Navigation ── -->
+    <nav class="bottom-nav">
+      <button class="nav-item active" data-page="dashboard" id="nav-dashboard" onclick="navigate('dashboard')">
+        <span class="nav-icon">⚡</span>
+        <span class="nav-label">Dashboard</span>
+        <span id="nav-indicator-dashboard" class="nav-indicator"></span>
+      </button>
+      <button class="nav-item" data-page="logs" id="nav-logs" onclick="navigate('logs')">
+        <span class="nav-icon">📋</span>
+        <span class="nav-label">Logs</span>
+        <span id="nav-indicator-logs" class="nav-indicator hidden"></span>
+        <span id="log-badge" class="nav-badge hidden">0</span>
+      </button>
+      <button class="nav-item" data-page="system" id="nav-system" onclick="navigate('system')">
+        <span class="nav-icon">🖥</span>
+        <span class="nav-label">System</span>
+        <span id="nav-indicator-system" class="nav-indicator hidden"></span>
+      </button>
+      <button class="nav-item" data-page="controls" id="nav-controls" onclick="navigate('controls')">
+        <span class="nav-icon">🎮</span>
+        <span class="nav-label">Controls</span>
+        <span id="nav-indicator-controls" class="nav-indicator hidden"></span>
+      </button>
+      <button class="nav-item" data-page="settings" id="nav-settings" onclick="navigate('settings')">
+        <span class="nav-icon">⚙️</span>
+        <span class="nav-label">Settings</span>
+        <span id="nav-indicator-settings" class="nav-indicator hidden"></span>
+      </button>
+    </nav>
+
+    <!-- Socket.io client (served by server automatically) -->
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>
