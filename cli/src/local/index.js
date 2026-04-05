@@ -55,9 +55,11 @@ module.exports = async function localCommand() {
   // Server stats cache
   let systemStats = {
     cpu: 0,
-    memory: { used: 0, total: 0, percent: 0 },
+    memory: { total: 0, used: 0, percent: 0 },
     uptime: 0,
   };
+
+  let lastErrorNotifTime = 0; // Prevent toast spam for repeating errors
 
   // ─── AntiGravity Project Simulation ──────────────────────────────────────────
   // These tasks are shown sequentially as the simulated build progresses
@@ -186,14 +188,18 @@ module.exports = async function localCommand() {
     // Broadcast to all connected clients immediately
     io.emit("newLog", entry);
 
-    // Also check for error logs and send notifications
+    // Also check for error logs and send notifications (throttled to avoid spam)
     if (message.includes("[ERROR]")) {
-      io.emit("notification", {
-        type: "error",
-        title: "Error Detected",
-        message: message,
-        timestamp: new Date().toISOString(),
-      });
+      const now = Date.now();
+      if (now - lastErrorNotifTime > 5000) {
+        lastErrorNotifTime = now;
+        io.emit("notification", {
+          type: "error",
+          title: "Error Detected",
+          message: message,
+          timestamp: new Date().toISOString(),
+        });
+      }
     }
   }
 
