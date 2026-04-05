@@ -43,6 +43,14 @@ create table if not exists public.logs (
   created_at  timestamptz default now()
 );
 
+-- API Keys: uniquely generated per user for the CLI tool
+create table if not exists public.api_keys (
+  id          text primary key default gen_random_uuid(),
+  user_email  text not null unique,
+  key         text not null unique,
+  created_at  timestamptz default now()
+);
+
 -- ── Enable Realtime ───────────────────────────────────────────────────────────
 -- This lets the phone browser get instant updates via Supabase Realtime
 alter publication supabase_realtime add table public.sessions;
@@ -55,3 +63,4 @@ create index if not exists sessions_email_idx on public.sessions (user_email);
 create index if not exists tasks_session_idx  on public.tasks    (session_id, task_index);
 create index if not exists docs_session_idx   on public.documents(session_id, doc_type);
 create index if not exists logs_session_idx   on public.logs     (session_id, created_at desc);
+create index if not exists api_keys_key_idx     on public.api_keys (key);

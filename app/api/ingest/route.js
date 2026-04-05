@@ -12,27 +12,45 @@ import { getSupabaseAdmin } from "@/lib/supabase"
 
 export async function POST(request) {
   try {
-    // Verify the ingest API key
-    const apiKey = request.headers.get("x-api-key")
-    if (!apiKey || apiKey !== process.env.INGEST_API_KEY) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    // Verify the ingest API key against Supabase
+    let apiKey = request.headers.get("x-api-key")
+    const authHeader = request.headers.get("Authorization")
+    if (authHeader && authHeader.startsWith("Bearer ")) {
+      apiKey = authHeader.split("Bearer ")[1]
     }
 
-    const body = await request.json()
-    const { session, tasks, documents, log } = body
-
-    if (!session?.id || !session?.user_email) {
-      return NextResponse.json({ error: "Missing session.id or session.user_email" }, { status: 400 })
+    if (!apiKey) {
+      return NextResponse.json({ error: "Missing API Key" }, { status: 401 })
     }
 
     const supabase = getSupabaseAdmin()
 
-    // 1. Upsert the session record
+    // Find the user by API key
+    const { data: keyRecord } = await supabase
+      .from("api_keys")
+      .select("user_email")
+      .eq("key", apiKey)
+      .single()
+
+    if (!keyRecord) {
+      return NextResponse.json({ error: "Unauthorized / Invalid API Key" }, { status: 401 })
+    }
+
+    const authenticatedEmail = keyRecord.user_email
+
+    const body = await request.json()
+    const { session, tasks, documents, log } = body
+
+    if (!session?.id) {
+      return NextResponse.json({ error: "Missing session.id" }, { status: 400 })
+    }
+
+    // 1. Upsert the session record securely bypassing the client's email
     const { error: sessionErr } = await supabase
       .from("sessions")
       .upsert({
         id:           session.id,
-        user_email:   session.user_email,
+        user_email:   authenticatedEmail, // Forcing secure backend lookup
         title:        session.title || "Untitled",
         status:       session.status || "unknown",
         progress:     session.progress || 0,

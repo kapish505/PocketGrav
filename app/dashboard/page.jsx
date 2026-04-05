@@ -79,6 +79,9 @@ export default async function Dashboard() {
             />
           )}
 
+          <Link href="/settings" className="text-gray-400 hover:text-white transition-colors text-sm font-medium mr-2">
+            Settings
+          </Link>
           <LogoutButton />
         </div>
       </header>
