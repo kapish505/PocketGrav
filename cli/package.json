@@ -1,6 +1,6 @@
 {
   "name": "pocketgrav",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Monitor your AntiGravity agent sessions from anywhere on your phone.",
   "main": "bin/pocketgrav.js",
   "bin": {
