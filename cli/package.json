@@ -1,10 +1,10 @@
 {
   "name": "pocketgrav",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Monitor your AntiGravity agent sessions from anywhere on your phone.",
   "main": "bin/pocketgrav.js",
   "bin": {
-    "pocketgrav": "./bin/pocketgrav.js"
+    "pocketgrav": "bin/pocketgrav.js"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"

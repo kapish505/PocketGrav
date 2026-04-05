@@ -6,108 +6,83 @@ PocketGrav is a cloudy-native, phone-first developer dashboard that streams real
 
 ---
 
-## ✨ Features
+# PocketGrav 🚀
 
-- **☁️ Cloud-Native Dashboard**: Deployed on Vercel, accessible from anywhere. No need to share local IPs.
-- **🔐 Secure Google Auth**: Login securely via NextAuth. Row-level security ensures you only see sessions attached to your exact email.
-- **⚡ Real-Time Supabase Sync**: Local logs, tasks, and system info instantly sync through a Supabase Postgres database.
-- **📊 Session Drilldown**: Track progress rings, active task states, and parsed markdown artifacts (`task.md`, `implementation_plan.md`) live as the AI generates them.
-- **📱 Clean Mobile UI**: Dark glassmorphism aesthetic built specifically for reading logs and progress easily on mobile.
+> **Monitor your AI Agents & AntiGravity projects from anywhere in the world.**
+
+PocketGrav is a cloudy-native, phone-first developer dashboard that streams real-time updates from your locally running AntiGravity agent sessions automatically.
 
 ---
 
-## 🏗 Architecture
+## 💻 Zero-Setup Universal CLI
 
-```text
-Your Laptop                                   The Cloud (Vercel + Supabase)
-─────────────────                            ───────────────────────────────
+We've bundled the entire PocketGrav experience into a single zero-dependency NPM package.
 
-[ 🤖 AntiGravity Agent ]
-       ↓
-(generates files in)                           [ 🌐 Next.js Dashboard ] 
-~/.gemini/antigravity/brain                            ↑
-       ↓                                               │ (Realtime Selects)
-[ 📡 PocketGrav Reporter ]  ──(HTTP POST)──→   [ 🗄️ Supabase Postgres DB ]
-(reporter/reporter.js)
+```bash
+npx pocketgrav --help
 ```
 
----
+PocketGrav operates in two distinct modes depending on your privacy and persistence needs:
 
-## 🚀 How to Set Up & Deploy
+### ⚡ Mode 1: Local Tunnel Mode (Zero Cloud Needed)
+If you want absolutely zero friction and no cloud accounts, run:
 
-PocketGrav requires setting up some cloud infrastructure (Supabase & Google Cloud).
+```bash
+npx pocketgrav local
+```
 
-### 1. Supabase Setup
-1. Create a free project on [Supabase](https://supabase.com).
-2. Go to the SQL Editor and run the queries found in `supabase/schema.sql` to generate the correct tables and Row-Level Security policies.
-3. Save your **Project URL**, **Anon Key**, and **Service Role Key**.
-
-### 2. Google OAuth Setup
-1. Go to the [Google Cloud Console](https://console.cloud.google.com).
-2. Create an OAuth 2.0 Client ID under **APIs & Services -> Credentials**.
-3. Add Authorized Redirect URIs for local development (`http://localhost:3000/api/auth/callback/google`) and your eventual Vercel deployment URL.
-4. Save your **Client ID** and **Client Secret**.
-
-### 3. Vercel Deployment
-1. Fork or clone this repository and import it into [Vercel](https://vercel.com).
-2. Set the following Environment Variables in Vercel. 
-   *(You can also set these in `.env.local` for local development)*:
-   
-   ```env
-   # Google OAuth
-   GOOGLE_CLIENT_ID=your_google_client_id
-   GOOGLE_CLIENT_SECRET=your_google_client_secret
-   
-   # NextAuth
-   NEXTAUTH_URL=https://<your-vercel-project>.vercel.app
-   NEXTAUTH_SECRET=generate_a_random_32_character_string
-
-   # Supabase
-   NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
-   NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-   SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
-
-   # Reporter Ingest API Security
-   INGEST_API_KEY=generate_another_random_secret_string
-   ```
-3. Deploy!
+**How it works**: 
+It boots a local Express webserver reading directly from your memory, spin ups a secure Cloudflare-style reverse tunnel (`localtunnel`), and prints a **QR Code** right to your terminal. Scan the QR code with your phone camera, and you instantly have a real-time tracking dashboard without data ever touching a persistent database.
 
 ---
 
-## 💻 Running the Local Reporter
+### ☁️ Mode 2: Global Cloud SaaS Sync
+If you want persistent tracking across multiple machines or to view old sessions when your laptop is closed, you can sync data directly to our global SaaS platform hosted on Vercel/Supabase.
 
-The reporter script (`reporter/reporter.js`) watches your local AI environments and beams updates up to your dashboard.
+1. Go to [https://pocket-grav.vercel.app](https://pocket-grav.vercel.app) (or your own self-hosted deployment) and log in with your Google Account.
+2. Click on **Settings** in the navbar to generate your strict, private API Key.
+3. Run the persistent watcher daemon on your laptop in the background:
 
-1. Clone this repository locally to the machine your agents run on.
-2. In the local repository's `.env.local`, specify these variables:
+```bash
+npx pocketgrav cloud --email your.email@gmail.com --key <YOUR_API_KEY>
+```
 
-   ```env
-   # Must exactly match the Google Email you log into the dashboard with
-   REPORTER_USER_EMAIL=youremail@gmail.com 
-
-   # Path to the active AI/Agent conversations
-   ANTIGRAVITY_BRAIN_PATH=/Users/<your-user>/.gemini/antigravity/brain
-
-   # Must match the API key you put in Vercel
-   INGEST_API_KEY=your_ingest_api_key
-
-   # The live URL of your deployed dashboard
-   INGEST_URL=https://<your-vercel-project>.vercel.app/api/ingest
-   ```
-
-3. Start the watcher daemon:
-   ```bash
-   node reporter/reporter.js
-   ```
-
-If configured correctly, the reporter will scan your local directories and push session state straight to your phone. 
+**How it works**:
+The daemon utilizes `chokidar` to efficiently watch your local `~/.gemini/antigravity/brain/` directory. Whenever your agent modifies a `task.md` or `walkthrough.md` file, the CLI parses the checklist state, calculates progress percentages, and securely `POST`s the update to the Supabase backend utilizing Row-Level Security.
 
 ---
 
-## 🛠 Tech Stack
+## 🏗 Self-Hosting the SaaS
 
-- **Framework**: [Next.js App Router (v15+)](https://nextjs.org/)
-- **Auth**: [NextAuth.js](https://next-auth.js.org/) (Google Provider)
-- **Database**: [Supabase PostgreSQL](https://supabase.com/)
-- **Styles**: Vanilla CSS Glassmorphism
-- **Watcher**: Native Node.js `chokidar` + `fs.promises`
+You can deploy your exact own replica of the PocketGrav Cloud to your own Vercel!
+
+### Infrastructure Checklist
+1. **Supabase**: Create a project and run `supabase/schema.sql` in the SQL Editor.
+2. **Google Cloud Console**: Create an OAuth 2.0 Web Client.
+3. **Vercel**: Deploy the code and bind these environment variables:
+
+```env
+# Google OAuth
+GOOGLE_CLIENT_ID=...
+GOOGLE_CLIENT_SECRET=...
+
+# NextAuth
+NEXTAUTH_URL=https://<your-vercel>.vercel.app
+NEXTAUTH_SECRET=generate_random_secret
+
+# Supabase
+NEXT_PUBLIC_SUPABASE_URL=...
+NEXT_PUBLIC_SUPABASE_ANON_KEY=...
+SUPABASE_SERVICE_ROLE_KEY=...
+```
+
+If you self-host, you just point the CLI to your own URL:
+`npx pocketgrav cloud --email x --key y --url https://<your-vercel>.vercel.app/api/ingest`
+
+---
+
+### 🛠 Tech Stack
+- **CLI Tool**: Node.js, Commander.js, Localtunnel, Chokidar
+- **Web App**: Next.js App Router (v15+)
+- **Database / Auth**: Supabase PostgreSQL + NextAuth.js
+- **Design**: Vanilla CSS Custom Glassmorphism
