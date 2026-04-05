@@ -304,8 +304,8 @@ module.exports = async function localCommand() {
   });
 
   // Fallback: serve index.html for all non-API routes
-  app.get("*", (req, res) => {
-    res.sendFile(path.join(__dirname, "public", "index.html"));
+  app.use((req, res) => {
+    res.sendFile(path.join(__dirname, "../../public", "index.html"));
   });
 
   // ─── Socket.io Events ─────────────────────────────────────────────────────────
