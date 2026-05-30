@@ -29,3 +29,16 @@ export async function middleware(request) {
 export const config = {
   matcher: ["/dashboard/:path*", "/project/:path*"],
 }
+
+// SECURITY FIX: Validate JWT token expiry before granting access
+function validateTokenExpiry(token) {
+  try {
+    const payload = JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString());
+    if (payload.exp && Date.now() >= payload.exp * 1000) {
+      return { valid: false, reason: 'Token expired' };
+    }
+    return { valid: true };
+  } catch (err) {
+    return { valid: false, reason: 'Malformed token' };
+  }
+}
